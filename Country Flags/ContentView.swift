@@ -9,39 +9,49 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var showingAlert = false
-    @State private var scoreTitle = ""
+    @State private var alertTitle = ""
+    @State private var alertDescription = ""
     @State private var score = 0
-    @State private var gameWon = false
+    @State private var gameFinished = false
+    // Player has 8 tries
+    let playerMaxTries = 8
+    @State private var trialCounter = 1
     
     @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"].shuffled()
     @State private var guessedCountries = [String]()
     @State private var correctAnswer = Int.random(in: 0...2)
     
+    func resetGame() {
+        gameFinished = false
+        score = 0
+        trialCounter = 1
+        countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"]
+        alertTitle = ""
+        alertDescription = ""
+    }
+    
     func continueGame() {
-        if gameWon {
-            score = 0
-            countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"]
-            gameWon = false
-        } else {
+        // trialCounter == playerMaxTries -> stop game
+        if trialCounter < playerMaxTries {
+            trialCounter += 1
             countries.shuffle()
             correctAnswer = Int.random(in: 0...2)
+        } else {
+            alertTitle = "Finished!"
+            alertDescription = "You scored \(score) points!"
+            gameFinished = true
         }
-        
     }
     
     func flagTapped(_ number: Int) {
         if number != correctAnswer {
-            scoreTitle =   "Wrong! That's the flag of \(countries[number])"
+            alertTitle =   "Yikesss! That's the flag of \(countries[number])"
             showingAlert = true
-        } else if countries.count > 3 {
+        } else {
+            // Player tapped the correct flag -> +1pt
             score += 1
             countries.remove(at: number)
             continueGame()
-        } else {
-            score += 1
-            gameWon = true
-            scoreTitle = "You won!"
-            showingAlert = true
         }
     }
 
@@ -67,7 +77,9 @@ struct ContentView: View {
                 
                 Spacer()
                 Spacer()
-                
+                Text("Flag \(trialCounter)/\(playerMaxTries)")
+                    .foregroundColor(.white)
+                    .font(.title2.bold())
                 Text("Score: \(score)")
                     .foregroundColor(.white)
                     .font(.title.bold())
@@ -92,13 +104,18 @@ struct ContentView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 20)
-                .background(.regularMaterial)
+                .background(.ultraThinMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
             }
             .padding()
         }
-        .alert(scoreTitle, isPresented: $showingAlert) {
+        .alert(alertTitle, isPresented: $showingAlert) {
             Button("Continue", action: continueGame)
+        } message: {
+            Text(alertDescription)
+        }
+        .alert(alertTitle, isPresented: $gameFinished) {
+            Button("Restart", action: resetGame)
         } message: {
             Text("Your score is \(score)")
         }
