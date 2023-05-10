@@ -72,8 +72,7 @@ struct ContentView: View {
                 Spacer()
                 
                 Text("Guess the Flag")
-                    .font(.largeTitle.bold())
-                    .foregroundColor(.white)
+                    .customTitleStyle()
                 
                 Spacer()
                 Spacer()
@@ -96,7 +95,7 @@ struct ContentView: View {
                         Button {
                             flagTapped(number)
                         } label: {
-                            Image(countries[number]).renderingMode(.original)
+                            FlagImage(flagName: countries[number])
                         }
                         .clipShape(Capsule())
                         .shadow(radius: 5)
@@ -125,5 +124,27 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+    }
+}
+
+struct FlagImage: View {
+    var flagName: String
+    
+    var body: some View {
+        Image(flagName).renderingMode(.original)
+    }
+}
+
+struct CustomTitle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.largeTitle.bold())
+            .foregroundColor(.white)
+    }
+}
+
+extension View {
+    func customTitleStyle() -> some View {
+        modifier(CustomTitle())
     }
 }
